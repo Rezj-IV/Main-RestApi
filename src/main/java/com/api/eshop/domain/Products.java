@@ -24,13 +24,17 @@ public class Products {
     private String name;
     private String nameB;
 
-    @Column(length = 500)
+    private String category;
+    private String group;
+
+
     private String seller;
     private int stock;
 
 
     private int price;
     private int priceWithDiscount = 0;
+
     private boolean incredibleOffers;
     private boolean dailySuggest;
     private boolean gaming;
@@ -46,11 +50,15 @@ public class Products {
     @JsonManagedReference("product")
     private List<ProductImages> images;
 
-    @OneToMany(mappedBy = "colorID" , cascade = CascadeType.ALL , fetch = FetchType.EAGER)
-    @JsonManagedReference("colorID")
-    private Set<ProductsColor> colorID;
+     @OneToMany(mappedBy = "colorID" , cascade = CascadeType.ALL , fetch = FetchType.EAGER)
+     @JsonManagedReference("colorID")
+     private Set<ProductsColor> colorID;
 
 
+
+  @OneToMany(mappedBy = "product" , cascade = CascadeType.ALL , fetch = FetchType.EAGER)
+    @JsonManagedReference("product")
+    private Set<ProductIAttribute> attribute;
 
 
 }

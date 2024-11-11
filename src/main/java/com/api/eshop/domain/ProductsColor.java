@@ -26,6 +26,6 @@ public class ProductsColor {
 
     @ManyToOne
     @JoinColumn(foreignKey = @ForeignKey(name = "ProductsColor_fk_1"))
-    @JsonBackReference("color")
+    @JsonBackReference("colorID")
     private Products  colorID ;
 }
