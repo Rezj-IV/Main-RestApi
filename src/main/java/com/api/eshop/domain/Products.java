@@ -25,7 +25,10 @@ public class Products {
     private String nameB;
 
     private String category;
-    private String group;
+
+    private String type ;
+
+
 
 
     private String seller;

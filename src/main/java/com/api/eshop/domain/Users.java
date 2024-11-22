@@ -24,11 +24,11 @@ public class Users  implements UserDetails {
 
     private String name;
 
-    private String lastname;
+        private String lastname;
 
     private String username;
 
-    private int mobilenumber;
+    private long mobilenumber;
 
     private String password;
 
