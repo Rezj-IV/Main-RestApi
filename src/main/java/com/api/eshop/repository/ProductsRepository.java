@@ -24,6 +24,7 @@ public interface ProductsRepository extends JpaRepository<Products , Long> {
     List<Products> findByPriceGreaterThan(int p);
     List<Products> findByPriceBetween(int from , int to); // select * from products where price between from and to
     Products findByName(String name);
+    List<Products> findByCategoryContains(String category);
 
 }
 

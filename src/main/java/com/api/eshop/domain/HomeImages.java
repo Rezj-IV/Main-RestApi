@@ -21,4 +21,9 @@ public class HomeImages  {
     private String indexImageUrl;
     private String name;
 
+    private  boolean  bestMobile;
+    private  boolean  bestLaptop;
+    private  boolean  bestHandFree;
+    private  boolean selectedBrands;
+
 }

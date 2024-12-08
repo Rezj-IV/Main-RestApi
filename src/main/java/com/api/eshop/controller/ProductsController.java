@@ -48,13 +48,10 @@ public class ProductsController {
     }
 
 
-
-
     @GetMapping("name/{name}")
     @CrossOrigin("*")
-    public ResponseEntity getById(@PathVariable String name) {
-//        Products result = service.getByName(name);
-        Products result = productsRepository.findByName(name);
+    public ResponseEntity getByName(@PathVariable String name) {
+        Products result = service.getByName(name);
         if(result!=null) {
             result.getImages().size();
             return new ResponseEntity(result, HttpStatus.OK);
@@ -62,6 +59,32 @@ public class ProductsController {
         else
             return new ResponseEntity(result , HttpStatus.BAD_REQUEST);
     }
+
+//    @GetMapping("category/{category}")
+//    @CrossOrigin("*")
+//    public ResponseEntity getByCategory(@PathVariable String category) {
+//        Products result = service.findByCategory(category);
+//        if(result!=null) {
+//            result.getImages().size();
+//            return new ResponseEntity(result, HttpStatus.OK);
+//        }
+//        else
+//            return new ResponseEntity(result , HttpStatus.BAD_REQUEST);
+//    }
+
+
+    @GetMapping("category/{category}")
+    @CrossOrigin("*")
+    public ResponseEntity getByCategory(@PathVariable String  category)
+    {
+        return  new ResponseEntity(productsRepository.findByCategoryContains(category), HttpStatus.OK);
+
+
+    }
+
+
+
+
 
     @GetMapping("incredibleOffers")
     @CrossOrigin("*")
@@ -90,7 +113,7 @@ public class ProductsController {
     @CrossOrigin("*")
     public ResponseEntity getAllrjPlus() {
 
-        return new ResponseEntity(service.getAllRjPlus(), HttpStatus.OK);
+        return new ResponseEntity(productsRepository.findByRjPlusIsTrue(), HttpStatus.OK);
     }
 
 

@@ -26,4 +26,29 @@ public class HomeImagesController {
 
     };
 
+    @GetMapping("bestMobile")
+    @CrossOrigin("*")
+    public ResponseEntity getAllbestMobile() {
+
+        return new ResponseEntity(repository.findByBestMobileIsTrue(), HttpStatus.OK);
+    }
+    @GetMapping("bestLaptop")
+    @CrossOrigin("*")
+    public ResponseEntity getAllbestLaptop() {
+
+        return new ResponseEntity(repository.findByBestLaptopIsTrue(), HttpStatus.OK);
+    }
+    @GetMapping("bestHandFree")
+    @CrossOrigin("*")
+    public ResponseEntity getAllbestHandFree() {
+
+        return new ResponseEntity(repository.findByBestHandFreeIsTrue(), HttpStatus.OK);
+    } @GetMapping("selectedBrands")
+    @CrossOrigin("*")
+    public ResponseEntity getAllselectedBrands() {
+
+        return new ResponseEntity(repository.findBySelectedBrandsIsTrue(), HttpStatus.OK);
+    }
+
+
 }

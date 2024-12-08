@@ -23,6 +23,8 @@ public class MainSlider
     @Column(columnDefinition = "longtext")
     private String indexImageUrl;
 
+    private  String name;
+
 
 
 }

@@ -64,11 +64,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/**/*/html",
                         "/**/*/css",
                         "/**/*/js").permitAll()
-                .antMatchers("FooterInformation/**",
-                        "HomeImages/**"
-
+                .antMatchers("/FooterInformation/**",
+                        "/HomeImages /**",
+                        "/Products/**"
 
                 ).permitAll()
+
+
                 .antMatchers(SecurityConstants.SIGNUP_AND_SIGNIN_URL).permitAll()
                 .antMatchers(SecurityConstants.PUBLIC_ACCESS).permitAll()
                 .antMatchers("/*").permitAll()

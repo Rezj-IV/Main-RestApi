@@ -21,13 +21,18 @@ public class Products {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+
     private String name;
+
     private String nameB;
 
     private String category;
 
-    private String type ;
 
+
+
+    private String type;
 
 
 

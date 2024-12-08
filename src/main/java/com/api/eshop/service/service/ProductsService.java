@@ -52,4 +52,9 @@ public class ProductsService {
     {
         return repository.findByName(name);
     }
+    public List<Products> findByCategory(String category)
+    {
+        return repository.findByCategoryContains(category);
+    }
+
 }
