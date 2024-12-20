@@ -50,6 +50,8 @@ public class Products {
     private boolean bestSelling;
     private boolean installmentGoods;
 
+    private boolean flagBearer ;
+
 
     @Column(length = 1000)
     private String indexImageUrl;
