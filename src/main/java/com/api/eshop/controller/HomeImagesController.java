@@ -8,16 +8,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("HomeImages ")
+@RequestMapping("HomeImages")
 public class HomeImagesController {
     @Autowired
     HomeImagesRepository repository;
+
+
 
     @GetMapping
     @CrossOrigin("*")
     public ResponseEntity getAll(){ return  new ResponseEntity(repository.findAll(), HttpStatus.OK);};
 
-    @GetMapping("{id}")
+        @GetMapping("{id}")
     @CrossOrigin("*")
     public ResponseEntity getById(@PathVariable Integer id)
     {
@@ -25,30 +27,6 @@ public class HomeImagesController {
 
 
     };
-
-    @GetMapping("bestMobile")
-    @CrossOrigin("*")
-    public ResponseEntity getAllbestMobile() {
-
-        return new ResponseEntity(repository.findByBestMobileIsTrue(), HttpStatus.OK);
-    }
-    @GetMapping("bestLaptop")
-    @CrossOrigin("*")
-    public ResponseEntity getAllbestLaptop() {
-
-        return new ResponseEntity(repository.findByBestLaptopIsTrue(), HttpStatus.OK);
-    }
-    @GetMapping("bestHandFree")
-    @CrossOrigin("*")
-    public ResponseEntity getAllbestHandFree() {
-
-        return new ResponseEntity(repository.findByBestHandFreeIsTrue(), HttpStatus.OK);
-    } @GetMapping("selectedBrands")
-    @CrossOrigin("*")
-    public ResponseEntity getAllselectedBrands() {
-
-        return new ResponseEntity(repository.findBySelectedBrandsIsTrue(), HttpStatus.OK);
-    }
 
 
 }

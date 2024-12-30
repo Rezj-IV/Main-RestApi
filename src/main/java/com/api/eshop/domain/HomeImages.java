@@ -26,4 +26,6 @@ public class HomeImages  {
     private  boolean  bestHandFree;
     private  boolean selectedBrands;
 
+    private  boolean digital;
+
 }
