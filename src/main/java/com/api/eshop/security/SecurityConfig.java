@@ -15,7 +15,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true, jsr250Enabled = true, prePostEnabled = true)
@@ -27,18 +26,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter()
-    {
-        return new JwtAuthenticationFilter();
-    }
-
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter();
+    }
+
+    // تنظیم AuthenticationManager
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(customUserDetailsService).passwordEncoder(bCryptPasswordEncoder);
+        auth.userDetailsService(customUserDetailsService)
+                .passwordEncoder(bCryptPasswordEncoder);
     }
 
     @Override
@@ -47,43 +47,52 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManager();
     }
 
+    // تنظیمات HttpSecurity
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.cors().and().csrf().disable()
+        http
+                .cors().and().csrf().disable()
+                // وقتی کاربر غیرمجاز است، 401 برگردان
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/",
+
+                // مسیرهای عمومی فایل‌ها و استاتیک
+                .antMatchers(
+                        "/uploads/**",
                         "/favicon.ico",
-                        "/**/*/png",
-                        "/**/*/gif",
-                        "/**/*/jpg",
-                        "/**/*/svg",
-                        "/**/*/html",
-                        "/**/*/css",
-                        "/**/*/js").permitAll()
-                .antMatchers("/FooterInformation/**",
-                        "/HomeImages/**",
-                        "/Products/**",
-                        "/MorvaridShop/**"
-
-
+                        "/**/*.png",
+                        "/**/*.gif",
+                        "/**/*.jpg",
+                        "/**/*.svg",
+                        "/**/*.html",
+                        "/**/*.css",
+                        "/**/*.js"
                 ).permitAll()
 
+                // مسیرهای آزاد پروژه
+                .antMatchers(
+                        "/FooterInformation/**",
+                        "/HomeImages/**",
+                        "/SixIcon/**",
+                        "/products/**",
+                        "/ShowController/**",
+                        "/MorvaridShop/**"
+                ).permitAll()
 
+                // مسیرهای لاگین و ثبت‌نام
                 .antMatchers(SecurityConstants.SIGNUP_AND_SIGNIN_URL).permitAll()
-                .antMatchers(SecurityConstants.PUBLIC_ACCESS).permitAll()
-                .antMatchers("/*").permitAll()
-                .antMatchers(SecurityConstants.STATIC_CONTENTS).permitAll()
-                .antMatchers(SecurityConstants.PRODUCTS).permitAll()
-                .antMatchers(SecurityConstants.SWAGGER_URI).permitAll()
-                .antMatchers(SecurityConstants.SWAGGER_UI).permitAll()
-                .antMatchers(SecurityConstants.SWAGGER_UI2).permitAll()
+
+                // مسیرهای Swagger
+                .antMatchers(SecurityConstants.SWAGGER_URI,
+                        SecurityConstants.SWAGGER_UI,
+                        SecurityConstants.SWAGGER_UI2).permitAll()
+
+                // سایر مسیرها نیاز به JWT دارند
                 .anyRequest().authenticated();
 
-                http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-
+        // اضافه کردن فیلتر JWT قبل از UsernamePasswordAuthenticationFilter
+        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 }

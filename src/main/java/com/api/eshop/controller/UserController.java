@@ -44,16 +44,6 @@ public class UserController {
     @Autowired
     private FileStorageService fileStorageService;
 
-
-
-
-
-
-
-
-
-
-
     @PostMapping("register")
     @CrossOrigin("*")
     public ResponseEntity add( @RequestBody Users user) {
@@ -62,9 +52,8 @@ public class UserController {
             Users userData = service.getByUsername(user.getUsername());
             if(userData!=null)
             {
-               return new ResponseEntity(new Users() , HttpStatus.OK);
+                return new ResponseEntity(new Users() , HttpStatus.OK);
             }
-            user.setRole("admin");
             Users addedUser = service.add(user);
             addedUser.setPassword("*");
             return new ResponseEntity<Users>(addedUser, HttpStatus.CREATED);

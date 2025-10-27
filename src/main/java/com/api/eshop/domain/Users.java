@@ -24,15 +24,15 @@ public class Users  implements UserDetails {
 
     private String name;
 
-        private String lastname;
+    private String lastname;
 
     private String username;
+    private String email;
 
     private long mobilenumber;
 
     private String password;
 
-    private String role;
 
     private boolean isLock=false;
     private boolean isExpired=false;

@@ -20,7 +20,7 @@ public class HomeImages  {
     private int id;
     private String indexImageUrl;
     private String name;
-
+    private String linkName;
     private  boolean  bestMobile;
     private  boolean  bestLaptop;
     private  boolean  bestHandFree;
