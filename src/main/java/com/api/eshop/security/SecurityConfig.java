@@ -1,98 +1,92 @@
 package com.api.eshop.security;
 
 import com.api.eshop.service.CustomUserDetailsService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.BeanIds;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(securedEnabled = true, jsr250Enabled = true, prePostEnabled = true)
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+@EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true, prePostEnabled = true)
+public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthenticationEntryPoint unauthorizedHandler;
+    private final JwtAuthenticationEntryPoint unauthorizedHandler;
+    private final CustomUserDetailsService customUserDetailsService;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final HandlerMappingIntrospector introspector;
 
-    @Autowired
-    private CustomUserDetailsService customUserDetailsService;
-
-    @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    public SecurityConfig(
+            JwtAuthenticationEntryPoint unauthorizedHandler,
+            CustomUserDetailsService customUserDetailsService,
+            BCryptPasswordEncoder bCryptPasswordEncoder,
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            HandlerMappingIntrospector introspector
+    ) {
+        this.unauthorizedHandler = unauthorizedHandler;
+        this.customUserDetailsService = customUserDetailsService;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.introspector = introspector;
+    }
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
-    // تنظیم AuthenticationManager
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(customUserDetailsService)
-                .passwordEncoder(bCryptPasswordEncoder);
-    }
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-    @Override
-    @Bean(BeanIds.AUTHENTICATION_MANAGER)
-    protected AuthenticationManager authenticationManager() throws Exception {
-        return super.authenticationManager();
-    }
-
-    // تنظیمات HttpSecurity
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
         http
-                .cors().and().csrf().disable()
-                // وقتی کاربر غیرمجاز است، 401 برگردان
-                .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .authorizeRequests()
+                .csrf(csrf -> csrf.disable())
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
 
-                // مسیرهای عمومی فایل‌ها و استاتیک
-                .antMatchers(
-                        "/uploads/**",
-                        "/favicon.ico",
-                        "/**/*.png",
-                        "/**/*.gif",
-                        "/**/*.jpg",
-                        "/**/*.svg",
-                        "/**/*.html",
-                        "/**/*.css",
-                        "/**/*.js"
-                ).permitAll()
+                        // مسیر login بدون JWT
+                        .requestMatchers(new AntPathRequestMatcher("/users/login")).permitAll()
 
-                // مسیرهای آزاد پروژه
-                .antMatchers(
-                        "/FooterInformation/**",
-                        "/HomeImages/**",
-                        "/SixIcon/**",
-                        "/products/**",
-                        "/ShowController/**",
-                        "/MorvaridShop/**"
-                ).permitAll()
+                        // مسیر عمومی محصولات بدون JWT
+                        .requestMatchers(new AntPathRequestMatcher("/**")).permitAll()
 
-                // مسیرهای لاگین و ثبت‌نام
-                .antMatchers(SecurityConstants.SIGNUP_AND_SIGNIN_URL).permitAll()
+                        // فایل‌های استاتیک
+                        .requestMatchers(
+                                new AntPathRequestMatcher("/uploads/**"),
+                                new AntPathRequestMatcher("/favicon.ico"),
+                                new AntPathRequestMatcher("/**/*.png"),
+                                new AntPathRequestMatcher("/**/*.gif"),
+                                new AntPathRequestMatcher("/**/*.jpg"),
+                                new AntPathRequestMatcher("/**/*.svg"),
+                                new AntPathRequestMatcher("/**/*.html"),
+                                new AntPathRequestMatcher("/**/*.css"),
+                                new AntPathRequestMatcher("/**/*.js")
+                        ).permitAll()
 
-                // مسیرهای Swagger
-                .antMatchers(SecurityConstants.SWAGGER_URI,
-                        SecurityConstants.SWAGGER_UI,
-                        SecurityConstants.SWAGGER_UI2).permitAll()
+                        // Swagger UI
+                        .requestMatchers(
+                                new AntPathRequestMatcher("/swagger-ui/**"),
+                                new AntPathRequestMatcher("/v3/api-docs/**"),
+                                new AntPathRequestMatcher("/swagger-ui.html")
+                        ).permitAll()
 
-                // سایر مسیرها نیاز به JWT دارند
-                .anyRequest().authenticated();
+                        // سایر مسیرها نیاز به JWT دارند
+                        .anyRequest().authenticated()
+                );
 
         // اضافه کردن فیلتر JWT قبل از UsernamePasswordAuthenticationFilter
-        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
     }
 }

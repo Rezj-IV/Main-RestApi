@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
@@ -25,7 +25,6 @@ public class HomeImages  {
     private  boolean  bestLaptop;
     private  boolean  bestHandFree;
     private  boolean selectedBrands;
-
     private  boolean digital;
 
 }

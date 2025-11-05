@@ -1,57 +1,91 @@
 package com.api.eshop.security;
 
-
-
 import com.api.eshop.domain.Users;
 import com.api.eshop.service.CustomUserDetailsService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 
-
+@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    @Autowired
-    private JwtTokenProvider tokenProvider;
 
-    @Autowired
-    private CustomUserDetailsService customUserDetailsService;
+    private final JwtTokenProvider tokenProvider;
+    private final CustomUserDetailsService customUserDetailsService;
+
+    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider,
+                                   CustomUserDetailsService customUserDetailsService) {
+        this.tokenProvider = tokenProvider;
+        this.customUserDetailsService = customUserDetailsService;
+    }
+
+    // مسیرهایی که JWT روی آنها اعمال نمی‌شود
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getServletPath();
+        return path.startsWith("/users/login") ||      // مسیر login
+                path.startsWith("/swagger-ui") ||      // swagger UI
+                path.startsWith("/v3/api-docs") ||     // swagger docs
+                path.startsWith("/uploads") ||         // فایل‌های آپلود
+                path.startsWith("/**") ||    // مسیر عمومی محصولات
+                path.endsWith(".png") ||
+                path.endsWith(".jpg") ||
+                path.endsWith(".gif") ||
+                path.endsWith(".svg") ||
+                path.endsWith(".css") ||
+                path.endsWith(".js") ||
+                path.endsWith(".html") ||
+                path.equals("/favicon.ico");
+    }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
-        try {
-            String jwt = getJWTFromRequest(httpServletRequest);
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                long userId = tokenProvider.getUserIdFormJWT(jwt);
-                Users usersDetails = customUserDetailsService.loadUserById(userId);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(usersDetails, null, Collections.emptyList());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
+        try {
+            String jwt = getJWTFromRequest(request);
+            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
+
+                long userId = tokenProvider.getUserIdFormJWT(jwt);
+                Users userDetails = customUserDetailsService.loadUserById(userId);
+
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails, null, Collections.emptyList());
+
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
+
         } catch (Exception ex) {
-            logger.error("could not set user authentication in security context  : "+ex);
-            ex.printStackTrace();
+            logger.error("❌ Could not set user authentication in security context: ", ex);
         }
 
-        filterChain.doFilter(httpServletRequest, httpServletResponse);
+        filterChain.doFilter(request, response);
     }
 
     private String getJWTFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader(SecurityConstants.HEADER_STRING);
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(SecurityConstants.TOKEN_PREFIX)) {
-            return bearerToken.substring(7);
+        if (StringUtils.hasText(bearerToken)) {
+            // حذف کوتیشن‌ها و فاصله اضافی
+            String token = bearerToken.replace("\"", "").trim();
+            // حذف هر تعداد پیشوند 'Bearer ' اضافی
+            while (token.toLowerCase().startsWith(SecurityConstants.TOKEN_PREFIX.toLowerCase())) {
+                token = token.substring(SecurityConstants.TOKEN_PREFIX.length()).trim();
+            }
+            return token;
         }
         return null;
     }
-
 }
