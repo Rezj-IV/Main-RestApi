@@ -39,11 +39,12 @@ public class MorvaridShop {
 
 
 
-    public MorvaridShop(String name, int price,String category, String indexImageUrl) {
+    public MorvaridShop(String name, int price,String category, String indexImageUrl , String seller) {
         this.name = name;
         this.price = price;
         this.category = category;
         this.indexImageUrl = indexImageUrl;
+        this.seller = seller;
     }
 
     // Getters & Setters
@@ -60,6 +61,9 @@ public class MorvaridShop {
 
     public String getIndexImageUrl() { return indexImageUrl; }
     public void setIndexImageUrl(String indexImageUrl) { this.indexImageUrl = indexImageUrl; }
+
+    public String getSeller() { return seller; }
+    public void setSeller(String seller) { this.seller = seller; }
 }
 
 

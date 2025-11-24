@@ -13,7 +13,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -41,7 +47,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
@@ -49,18 +56,32 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                // ✅ فعال‌سازی CORS و غیرفعال کردن CSRF
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
 
-                        // مسیر login بدون JWT
+                // ✅ تنظیم مدیریت سشن
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // ✅ هندلر خطای JWT
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
+
+                // ✅ تعیین مسیرهای آزاد و محافظت‌شده
+                .authorizeHttpRequests(auth -> auth
+                        // مسیر لاگین بدون نیاز به احراز هویت
                         .requestMatchers(new AntPathRequestMatcher("/users/login")).permitAll()
 
-                        // مسیر عمومی محصولات بدون JWT
+                        // مسیر محصولات برای همه آزاد
                         .requestMatchers(new AntPathRequestMatcher("/**")).permitAll()
 
-                        // فایل‌های استاتیک
+                        // مسیر Swagger برای همه آزاد
+                        .requestMatchers(
+                                new AntPathRequestMatcher("/swagger-ui/**"),
+                                new AntPathRequestMatcher("/v3/api-docs/**"),
+                                new AntPathRequestMatcher("/swagger-ui.html")
+                        ).permitAll()
+
+                        // مسیر فایل‌های استاتیک (تصاویر، CSS، JS)
                         .requestMatchers(
                                 new AntPathRequestMatcher("/uploads/**"),
                                 new AntPathRequestMatcher("/favicon.ico"),
@@ -73,20 +94,34 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/**/*.js")
                         ).permitAll()
 
-                        // Swagger UI
-                        .requestMatchers(
-                                new AntPathRequestMatcher("/swagger-ui/**"),
-                                new AntPathRequestMatcher("/v3/api-docs/**"),
-                                new AntPathRequestMatcher("/swagger-ui.html")
-                        ).permitAll()
-
-                        // سایر مسیرها نیاز به JWT دارند
+                        // سایر مسیرها فقط با JWT
                         .anyRequest().authenticated()
                 );
 
-        // اضافه کردن فیلتر JWT قبل از UsernamePasswordAuthenticationFilter
+        // ✅ اضافه کردن فیلتر JWT قبل از UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    // ✅ تنظیمات CORS برای Swagger و Frontend
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOrigins(List.of(
+                "https://rjland.ir",
+                "https://www.rjland.ir",
+                "http://localhost:3000" // در صورت تست از لوکال
+        ));
+
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setAllowCredentials(true); // برای ارسال هدرها
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }

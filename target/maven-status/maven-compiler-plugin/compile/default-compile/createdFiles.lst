@@ -2,6 +2,7 @@ com\api\eshop\repository\HomeImagesRepository.class
 com\api\eshop\repository\ShowRepository.class
 com\api\eshop\security\SecurityConfig.class
 com\api\eshop\controller\MorvaridShopController.class
+com\api\eshop\config\WebConfig.class
 com\api\eshop\domain\MainSlider.class
 com\api\eshop\service\utilities\ErrorsMaps.class
 com\api\eshop\domain\MorvaridShopImages.class

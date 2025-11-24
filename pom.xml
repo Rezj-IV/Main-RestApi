@@ -126,7 +126,25 @@
                     <release>21</release>
                 </configuration>
             </plugin>
+
+
+
+            <!-- ✅ پلاگین مخصوص ساخت jar اجرایی -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.3.0</version> <!-- یا نسخه نزدیک به Spring Boot خودت -->
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
+
     </build>
 
 

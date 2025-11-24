@@ -86,8 +86,11 @@ public class MorvaridShopController {
             @RequestParam("name") String name,
             @RequestParam("price") int price,
             @RequestParam("category") String category,
-            @RequestParam(value = "image", required = false) MultipartFile image
-    ) throws IOException {
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            @RequestParam("seller") String seller
+
+
+            ) throws IOException {
 
         String indexImageUrl = null;
 
@@ -104,7 +107,7 @@ public class MorvaridShopController {
 
         }
 
-        MorvaridShop post = new MorvaridShop(name, price, category , indexImageUrl);
+        MorvaridShop post = new MorvaridShop(name, price, category , indexImageUrl , seller );
         repository.save(post);
 
         return ResponseEntity.ok(post);

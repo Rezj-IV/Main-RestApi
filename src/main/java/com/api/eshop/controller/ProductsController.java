@@ -15,7 +15,7 @@ import javax.swing.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("products")
+@RequestMapping("myProducts")
 public class ProductsController {
 
     @Autowired
@@ -60,17 +60,12 @@ public class ProductsController {
             return new ResponseEntity(result , HttpStatus.BAD_REQUEST);
     }
 
-//    @GetMapping("category/{category}")
-//    @CrossOrigin("*")
-//    public ResponseEntity getByCategory(@PathVariable String category) {
-//        Products result = service.findByCategory(category);
-//        if(result!=null) {
-//            result.getImages().size();
-//            return new ResponseEntity(result, HttpStatus.OK);
-//        }
-//        else
-//            return new ResponseEntity(result , HttpStatus.BAD_REQUEST);
-//    }
+    @GetMapping("type/{type}")
+    @CrossOrigin("*")
+    public ResponseEntity getByType(@PathVariable String  type)
+    {
+        return  new ResponseEntity(productsRepository.findByTypeContains(type), HttpStatus.OK);
+    }
 
 
     @GetMapping("category/{category}")
@@ -78,11 +73,7 @@ public class ProductsController {
     public ResponseEntity getByCategory(@PathVariable String  category)
     {
         return  new ResponseEntity(productsRepository.findByCategoryContains(category), HttpStatus.OK);
-
-
     }
-
-
 
 
 
@@ -123,6 +114,15 @@ public class ProductsController {
         List<Products> result = service.getAllBestSelling();
         return new ResponseEntity(result, HttpStatus.OK);
     }
+
+
+
+    @GetMapping("flagBearer")
+    @CrossOrigin("*")
+    public ResponseEntity getAllFlagBearer() {
+        return new ResponseEntity(service.getAllFlagBearer(), HttpStatus.OK);
+    }
+
 
 
     @GetMapping("installmentGoods")

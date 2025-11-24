@@ -36,6 +36,14 @@ public class ProductsService {
         return repository.findByBestSellingIsTrue();
     }
 
+    public List<Products> getAllFlagBearer() {
+        return repository.findByFlagBearerIsTrue();
+    }
+
+    public List<Products> getAllType() {
+        return repository.findByFlagBearerIsTrue();
+    }
+
     public List<Products> getAllInstallmentGoods() {
         return repository.findByInstallmentGoodsIsTrue();
     }
